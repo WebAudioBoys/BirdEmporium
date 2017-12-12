@@ -8,9 +8,10 @@ Created on Mon Dec 11 23:36:03 2017
 import numpy as np
 from basicFunctions import *
 from scipy.stats.mstats import gmean
+from scipy.signal import medfilt, butter, filtfilt
 
 
-def plotSpectrogram(array,win_size,hop_size):
+def plotSpectrogram(array,win_size,hop_size,fs):
     #Read in file
     lenInTime = len(array)/fs
     #Length of spectrogram window
@@ -60,9 +61,14 @@ def findPeaks(signal):
 
     return diffZC
 
+def noveltyLPF(nov, fs, w_c):
+    w_c = 2*w_c/fs
+    [b, a] = butter(1,w_c,btype='lowpass')
+    filtered_le = filtfilt(b,a,nov)
+    return filtered_le
+
 def createThreshold(array,filtLen):
     threshold = medfilt(array, filtLen)
-    
     return threshold
 
 def spectralFlatness(spec):
@@ -70,5 +76,26 @@ def spectralFlatness(spec):
     denom = np.mean(spec,axis=0)
     output = numerator/denom
     return output
+
+def threshPeaks(le,thresh):
+    le_diff = np.diff(le) 
+    #Returns indices of zero cross in diff
+    le_diff = np.append(0,le_diff)
+    #signal = np.sign(signal)
+    diffZC = np.diff(np.sign(le_diff))
+         #Only find upper peaks
+    diffZC = -1 * diffZC
+    diffZC = (diffZC + np.abs(diffZC))/2
+    output = np.where(diffZC)
+    output += 1
+    output = np.asarray(output)
+    values = le[output[:]]
+    threshAtPeaks = thresh[output[:]]
+    peak_diff = values-threshAtPeaks
+    threshAtPeaks = peak_diff + np.abs(peak_diff)
+    properPeaks = np.where(threshAtPeaks)
+    peaks = values[properPeaks[:]]
+    times = output[properPeaks[:]]
+    return peaks, times
     
     
