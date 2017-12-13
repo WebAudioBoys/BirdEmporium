@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 12 20:00:25 2017
+
+@author: DavidVanDusen
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.io import wavfile
+from grabFilePaths import grabFilepaths
+from basicFunctions import bufferSig
+from onsetDetectionFunctions import spectralFlux,noveltyLPF,localEnergy,findPeaks,createThreshold,threshPeaks
+
+path = '../16kHzBirdSongs/'
+filepaths = grabFilepaths(path)
+win_size = 128
+hop_size = 64
+overlap = win_size - hop_size
+fs, song = wavfile.read(filepaths[2][40])
+if len(song) > fs*60:
+    song = song[0:fs*60]
+song = song/np.max(np.abs(song))
+songLen = len(song)/fs
+frames = bufferSig(song,win_size,overlap)
+timeBins = frames.shape[1]
+timeVec = np.linspace(0,1-(1/timeBins), timeBins)
+timeVec = timeVec * songLen
+le, le_fs = localEnergy(song,win_size,hop_size,fs)
+w_c = 1
+filtered_le = noveltyLPF(le,le_fs,w_c)
+filtered_le = (filtered_le - np.min(filtered_le))
+filtered_le = filtered_le/np.max(filtered_le)
+thresh = createThreshold(filtered_le,11)
+thresh = thresh - 0.005
+peaks,times = threshPeaks(filtered_le,thresh)
+
+plt.figure()
+plt.subplot(211)
+plt.plot(timeVec,filtered_le,'r')
+plt.plot(timeVec,thresh,'b')
+plt.plot(timeVec[times[:]],peaks, 'ko')
+plt.xlabel('Time in Seconds')
+plt.ylabel('Nov Broiii')
+
+sf,sf_fs = spectralFlux(song,win_size,hop_size,fs)
+sf = np.append(0,sf)
+filtered_sf = noveltyLPF(sf,sf_fs,w_c)
+filtered_sf = (filtered_sf - np.min(filtered_sf))
+filtered_sf = filtered_sf/np.max(filtered_sf)
+thresh = createThreshold(filtered_sf,11)
+thresh = thresh - 0.005
+peaks,times = threshPeaks(filtered_sf,thresh)
+
+
+plt.subplot(212)
+plt.plot(timeVec,filtered_sf,'r')
+plt.plot(timeVec,thresh,'b')
+plt.plot(timeVec[times[:]],peaks, 'ko')
+plt.xlabel('Time in Seconds')
+plt.ylabel('Nov Broiii')
+
+#plt.subplot(212)
+#plt.plot()

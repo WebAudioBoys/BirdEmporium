@@ -1,74 +1,21 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#Spyder Editor
+"""
+Created on Wed Dec 13 09:13:23 2017
 
-#This is a temporary script file.
-#"""
+@author: DavidVanDusen
+"""
+import numpy as np
 import numpy as np
 from scipy.io import wavfile
 from scipy.fftpack import dct
-import matplotlib.pyplot as plt
-from scipy.signal import medfilt
 
-def bufferSig(array,win_size,overlap):
-    array = array/max(array)
-    hopSize = win_size - overlap
-    zeroPad = np.zeros(overlap)
-    sig = np.append(zeroPad,array)
-    currLen = len(sig)
-    endZeroPad = np.zeros(((win_size - (currLen%win_size))+win_size))
-    sig = np.append(sig,endZeroPad)
-    window = np.hanning(win_size)
-    numFrames = int(1+(len(array)/hopSize))
-    bufferedSig = np.zeros([win_size, numFrames])
-    
-    for i in range(0,numFrames):
-        startIndex = i * hopSize
-        endIndex = startIndex+win_size
-        bufferedSig[:,i] =  sig[startIndex:endIndex] * window
-    return bufferedSig
+#A note to you Brad,
 
-def freq2mel(freq):
-    melval = 1127.01028 * np.log(1 + (freq/700));
-    return melval
+#We are going to provide the frames for this function but currently the MFCCs function
+#reads in an audio file... Basically all we need is the computation of the filter bank
+#I would take care of that now, but I have to go to work...
 
-def localEnergy(array,win_size,hop_size,fs):
-    buf = bufferSig(array,win_size,hop_size)
-    localEnergies = np.zeros(buf.shape[1])
-    for i in range(0,buf.shape[1]):
-        localEnergies[i] = (np.sum(np.square(buf[:,i])))/win_size
-    localEnergies = np.log10(localEnergies)
-    localEnergies = np.diff(localEnergies)
-    localEnergies = np.append(0,localEnergies)
-    localEnergies = localEnergies-np.min(localEnergies)
-    localEnergies = localEnergies/np.max(localEnergies)
-    le_fs = fs/hop_size
-    return localEnergies, le_fs
-
-    
-
-
-def createThreshold(array,filtLen):
-    threshold = medfilt(array, filtLen)
-    return threshold
-
-def plotSpectrogram(array,win_size,hop_size):
-    #Read in file
-    lenInTime = len(array)/fs
-    #Length of spectrogram window
-    specLen = int(1+(win_size/2))
-    #Sample overlap
-    overlap = win_size - hop_size
-    #Break the signal into frames
-    buf=bufferSig(array, win_size,overlap)
-    #Take the fft of every frame
-    buf = np.fft.fft(buf,win_size,0)
-    #Cut them down to size
-    buf = np.abs(buf[0:specLen,:])
-    buf = 20*np.log10(buf)
-    F = np.linspace(0,fs/2,specLen)
-    T = np.linspace(0,lenInTime,buf.shape[1])
-    return  buf,F,T
-        
 
 def mel2freq(melval):
     hzval = 700 * (np.expm1(melval/1127.01028));
@@ -130,23 +77,6 @@ def spectralCentroid(spect):
    numerator = spect * ks[:, np.newaxis]
    numerator= np.sum(numerator,1)
    
-def findPeaks(signal):
-    signal = np.diff(signal) 
-    #Returns indices of zero cross in diff
-    np.append([0],signal)
-    diffZC = np.where((np.diff(np.sign(signal))))[0]
-    
-    #Only find upper peaks
-    diffZC = -1 * diffZC
-    diffZC = (diffZC + np.abs(diffZC))/2
-    
-#    for i in range(0,len(diffZC)):
-#        if signal[diffZC[i]] > thresh:
-#            np.append(output,signal[diffZC[i]])
-#        else:
-#            
-    
-    return diffZC
 
 #def thresholdPeaks(signal,thresh)
  
@@ -197,25 +127,3 @@ def compute_mfccs_frames(frames, fs, hop_size,min_freq,
     #plt.pcolor(melFiltered)
     ####Normalization
     return melFiltered, mfcc_fs      
-       
-
-    
-    
-
-    
-    
-
-
-
- 
-
-
-
-    
-    
-    
-
-
-
-
-

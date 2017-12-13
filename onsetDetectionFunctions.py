@@ -6,7 +6,7 @@ Created on Mon Dec 11 23:36:03 2017
 @author: DavidVanDusen
 """
 import numpy as np
-from basicFunctions import *
+from basicFunctions import bufferSig,getSpectrogram
 from scipy.stats.mstats import gmean
 from scipy.signal import medfilt, butter, filtfilt
 
@@ -24,19 +24,25 @@ def plotSpectrogram(array,win_size,hop_size,fs):
     buf = np.fft.fft(buf,win_size,0)
     #Cut them down to size
     buf = np.abs(buf[0:specLen,:])
-    buf = 20*np.log10(buf)
+    buf = 20*np.log10(buf, where=True)
     F = np.linspace(0,fs/2,specLen)
     T = np.linspace(0,lenInTime,buf.shape[1])
     return  buf,F,T
 
 def localEnergy(array,win_size,hop_size,fs):
-    buf = bufferSig(array,win_size,hop_size)
+    overlap = win_size - hop_size
+    buf = bufferSig(array,win_size,overlap)
+
     localEnergies = np.zeros(buf.shape[1])
     for i in range(0,buf.shape[1]):
-        localEnergies[i] = (np.sum(np.square(buf[:,i])))/win_size
-    localEnergies = np.log10(localEnergies)
+        localEnergies[i] = np.sum(np.square(buf[:,i]))
+    
+    for i in range(0,len(localEnergies)):
+        if localEnergies[i] > 0:
+            localEnergies[i] = np.log10(localEnergies[i])
+#    localEnergies = np.log10(localEnergies, where=trueSpot)
     localEnergies = np.diff(localEnergies)
-    localEnergies = np.append(0,localEnergies)
+    localEnergies = np.append(np.mean(localEnergies),localEnergies)
     localEnergies = localEnergies-np.min(localEnergies)
     localEnergies = localEnergies/np.max(localEnergies)
     le_fs = fs/hop_size
@@ -44,10 +50,13 @@ def localEnergy(array,win_size,hop_size,fs):
 
 def spectralFlux(array,win_size,hop_size,fs):
     spec,F,T = getSpectrogram(array,win_size,hop_size,fs)
-    specFlux = np.diff(spec,1,1)
-    specFlux = np.append(np.zeros(win_size,1),specFlux)
+    specFlux = np.diff(spec)
+    
     specFlux = 0.5*(specFlux+np.abs(specFlux))
-    specFlux = np.sum(specFlux,axis=0)/spec.shape[0]        
+    specFluxVals = np.sum(specFlux,axis=0)
+    specFluxVals = specFluxVals/specFluxVals.shape[0] 
+    sf_fs = fs/hop_size
+    return specFluxVals,sf_fs       
 
 def findPeaks(signal):
     signal = np.diff(signal) 
@@ -63,7 +72,7 @@ def findPeaks(signal):
 
 def noveltyLPF(nov, fs, w_c):
     w_c = 2*w_c/fs
-    [b, a] = butter(1,w_c,btype='lowpass')
+    [b, a] = butter(3,w_c,btype='low')
     filtered_le = filtfilt(b,a,nov)
     return filtered_le
 
@@ -87,8 +96,9 @@ def threshPeaks(le,thresh):
     diffZC = -1 * diffZC
     diffZC = (diffZC + np.abs(diffZC))/2
     output = np.where(diffZC)
-    output += 1
-    output = np.asarray(output)
+    
+    output = np.asarray(output) + 1
+#    output = np.asarray(output)
     values = le[output[:]]
     threshAtPeaks = thresh[output[:]]
     peak_diff = values-threshAtPeaks

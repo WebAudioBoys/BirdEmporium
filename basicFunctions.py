@@ -41,7 +41,7 @@ def getSpectrogram(array,win_size,hop_size,fs):
     #Cut them down to size
     buf = buf[0:specLen,:]
     buf = np.abs(buf)
-#    buf = 20*np.log10(buf)
+#   buf = 20*np.log10(buf)
     
     F = np.linspace(0,fs/2,specLen)
     T = np.linspace(0,lenInTime,buf.shape[1])

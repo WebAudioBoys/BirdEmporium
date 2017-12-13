@@ -14,7 +14,7 @@ from scipy.signal import medfilt, butter, filtfilt
 from temp import *
 #import scikits.audiolab
 
-fs, song = wavfile.read(filepaths[1][16])
+fs, song = wavfile.read(filepaths[2][30])
 song = song/np.max(np.abs(song))
 
 lenInSecs = len(song)/fs
@@ -32,7 +32,7 @@ w_c = 2*w_c/le_fs
 filtered_le = filtfilt(b,a,le)
 peaks = findPeaks(filtered_le)
 thresh = createThreshold(le, 25)
-thresh = thresh + 0.03
+thresh = thresh + 0.06
 plt.plot(thresh, 'b')
 
 

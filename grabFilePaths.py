@@ -23,3 +23,5 @@ def grabFilepaths(path):
         thisSet = [currPath+s for s in thisSet]
         filepaths.append(thisSet)
     return filepaths
+
+x = grabFilepaths('../16kHzBirdSongs/')
