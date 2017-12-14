@@ -6,10 +6,9 @@ Created on Sun Dec 10 13:22:21 2017
 @author: DavidVanDusen
 """
 
-###This script reads in all of the filepaths in the enclosing directory
+# This script reads in all of the filepaths in the enclosing directory
 
 import os
-
 
 def grabFilepaths(path):
     filepaths = []
@@ -23,5 +22,3 @@ def grabFilepaths(path):
         thisSet = [currPath+s for s in thisSet]
         filepaths.append(thisSet)
     return filepaths
-
-x = grabFilepaths('../16kHzBirdSongs/')
