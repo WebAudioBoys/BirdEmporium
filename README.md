@@ -1,8 +1,7 @@
 # BirdEmporium
-MIR Final Project
+MIR Final Project by Brad and Dave.
 
-## Code Flow
-1. grabGoodFrames.py - takes frames from raw input
-1. createFeatures.py - creates MFCCs
-1. classify.py - split up test/train, run random forest algorithm
-1. ToDo - calculate precision, accuracy, and f score
+## Running the classifier:
+1. grabFramesBySpecies.py - Selects relevant audio by onset detection, creates buffered audio matrix of selected frames for each species.
+1. createFeatures.py - Creates MFCCs for each species, concatenates results into single master matrix of MFCCs.
+1. classify.py - Split up test/train features, run random forest algorithm, return classification test results.
