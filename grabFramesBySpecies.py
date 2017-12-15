@@ -72,15 +72,15 @@ for directory in range(0,5):
                 framesWeNeed[:,startIndex:endIndex] = frames[:,times[i]:endTimes[i]]
                 startIndex = startIndex + lengths[i]
                 endIndex = startIndex + lengths[i+1]
-            if directory == 0
+            if directory == 0:
                 orioleFrames = np.hstack((orioleFrames,framesWeNeed))
-            else if directory == 1
+            if directory == 1:
                 cardinalFrames = np.hstack((cardinalFrames,framesWeNeed))
-            else if directory == 2
+            if directory == 2:
                 chickadeeFrames = np.hstack((chickadeeFrames,framesWeNeed))
-            else if directory == 3
+            if directory == 3:
                 finchFrames = np.hstack((finchFrames,framesWeNeed))
-            else if directory == 4
+            if directory == 4:
                 robinFrames = np.hstack((robinFrames,framesWeNeed))
         print(filepath, 'is finished buddy!')
 
@@ -95,10 +95,10 @@ chickadeeFrames = chickadeeFrames[:,1:]
 finchFrames = finchFrames[:,1:]      
 robinFrames = robinFrames[:,1:]      
 
-np.save('orioleTruncatedFrames32', allFrames)
-np.save('cardinalTruncatedFrames32', allFrames)
-np.save('chickadeeTruncatedFrames32', allFrames)
-np.save('finchTruncatedFrames32', allFrames)
-np.save('robinTruncatedFrames32', allFrames)
+np.save('../SavedVariables/orioleTruncatedFrames32', orioleFrames)
+np.save('../SavedVariables/cardinalTruncatedFrames32', cardinalFrames)
+np.save('../SavedVariables/chickadeeTruncatedFrames32', chickadeeFrames)
+np.save('../SavedVariables/finchTruncatedFrames32', finchFrames)
+np.save('../SavedVariables/robinTruncatedFrames32', robinFrames)
 
-np.save('BirdLabels32', labels)        
+np.save('../SavedVariables/BirdLabels32', labels)        

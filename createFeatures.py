@@ -9,8 +9,15 @@ Created on Wed Dec 13 21:36:47 2017
 from MFCCs import compute_mfccs_frames
 import numpy as np
 
-allFrames = np.load('TruncatedBirdFrames32.npy')
-labels = np.load('BirdLabels32.npy')
+orioleFrames = np.load('../SavedVariables/orioleTruncatedFrames32.npy')
+cardinalFrames = np.load('../SavedVariables/cardinalTruncatedFrames32.npy')
+chickadeeFrames = np.load('../SavedVariables/chickadeeTruncatedFrames32.npy')
+finchFrames = np.load('../SavedVariables/finchTruncatedFrames32.npy')
+robinFrames = np.load('../SavedVariables/robinTruncatedFrames32.npy')
+labels = np.load('../SavedVariables/BirdLabels32.npy')
+
+allBirds = [orioleFrames, cardinalFrames, chickadeeFrames,finchFrames,robinFrames]
+
 
 min_freq = 500
 max_freq = 10000
@@ -21,9 +28,26 @@ hop_size = 256
 fs = 32000
 
 
-mfccs, mfcc_fs = compute_mfccs_frames(allFrames,fs,
+
+oriole_mfccs, mfcc_fs = compute_mfccs_frames(orioleFrames,fs,
 hop_size,min_freq,max_freq,num_mel_filts, n_dct)
 
+cardinal_mfccs, mfcc_fs = compute_mfccs_frames(cardinalFrames,fs,
+hop_size,min_freq,max_freq,num_mel_filts, n_dct)
+
+chickadee_mfccs, mfcc_fs = compute_mfccs_frames(chickadeeFrames,fs,
+hop_size,min_freq,max_freq,num_mel_filts, n_dct)
+
+finch_mfccs, mfcc_fs = compute_mfccs_frames(finchFrames,fs,
+hop_size,min_freq,max_freq,num_mel_filts, n_dct)
+
+robin_mfccs, mfcc_fs = compute_mfccs_frames(robinFrames,fs,
+hop_size,min_freq,max_freq,num_mel_filts, n_dct)
+
+
+
+all_mfccs = np.hstack((oriole_mfccs, cardinal_mfccs, chickadee_mfccs, finch_mfccs, robin_mfccs))
+np.save('../SavedVariables/all_mfccs', all_mfccs)
 #num_frames_per_class = np.bincount(labels.astype(int))
 #num_frames_per_test = np.floor(np.min(num_frames_per_class)/5)
 
