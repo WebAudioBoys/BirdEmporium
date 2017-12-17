@@ -8,6 +8,7 @@ Created on Wed Dec 13 09:13:23 2017
 import numpy as np
 from scipy.io import wavfile
 from scipy.fftpack import dct
+from onsetDetectionFunctions import spectralFlatness
 
 def mel2freq(melval):
     hzval = 700 * (np.expm1(melval/1127.01028));
@@ -77,6 +78,18 @@ def spectralCentroid(spect):
    numerator = spect * ks[:, np.newaxis]
    numerator= np.sum(numerator,1)
  
+def dft_of_frames(frames):
+    win_size = frames.shape[0]
+    #Length of spectrogram window
+    specLen = int(1+(win_size/2))
+    #Sample overlap
+
+    #Take the fft of every frame
+    frames = np.fft.fft(frames,win_size,0)
+    #Cut them down to size
+    frames = np.abs(frames[0:specLen,:])
+    return frames
+
 def compute_mfccs_frames(frames, fs, hop_size,min_freq,
                   max_freq, num_mel_filts, n_dct):
 
@@ -122,5 +135,49 @@ def compute_mfccs_frames(frames, fs, hop_size,min_freq,
     mfcc_fs = hop_size/fs
     
     return melFiltered, mfcc_fs
+
+def compute_mfccs_from_spec(specFrames,fs,win_size,min_freq,max_freq,num_mel_filts,n_dct):
+        #Convert to mel
+    specLen = specFrames.shape[0]
+    min_freq = freq2mel(min_freq)
+    max_freq = freq2mel(max_freq)
+    freqsVec = np.linspace(min_freq,max_freq,num_mel_filts+2)
+    freqsVec = mel2freq(freqsVec[:])
+    binHop = fs/win_size
+    closestBins = np.round(freqsVec[:]/binHop)
+    closestBins = closestBins[:]
+    melFiltBank = np.zeros([num_mel_filts,specLen])
+    for i in range(0,num_mel_filts):
+        startIndex = int(closestBins[i])
+        midIndex = int(closestBins[i+1])
+        endIndex = int(closestBins[i+2])
+        melFiltBank[i,startIndex:midIndex+1] = np.linspace(0,1, midIndex-startIndex+1)
+        melFiltBank[i,midIndex:endIndex+1] = np.linspace(1,0, endIndex-midIndex+1)
+        melFiltBank[i,midIndex] = 1.0
+        #normalize filters here
+        melFiltBank[i,:] = melFiltBank[i,:]/np.sum(melFiltBank[i,:])
+    melFiltered = np.matmul(melFiltBank,specFrames)
+    melFiltered = 20*np.log10(melFiltered,where=True)
+    melFiltered = dct(melFiltered,2,40,0)
+    melFiltered = melFiltered[1:n_dct,:]
+    melFiltered = melFiltered - np.min(melFiltered,axis=0)
+    melFiltered = melFiltered/np.sum(melFiltered,axis=0) 
+    melFiltered = np.nan_to_num(melFiltered)
+    return melFiltered
+    
+def filter_noisy_frames(frames):
+    frames=dft_of_frames(frames)
+#    print(frames.shape)
+    flatness = spectralFlatness(frames)
+    flatness = np.nan_to_num(flatness)
+    noisy_frames = np.where(flatness > 0.75)[0]
+    noisy_frames = np.flip(noisy_frames,0)
+#    print(noisy_frames)
+    num_deleted_frames = len(noisy_frames)
+#    print(num_deleted_frames)
+    frames = np.delete(frames, noisy_frames,1)
+#    print(frames.shape)
+    return frames, noisy_frames
+        
 
       

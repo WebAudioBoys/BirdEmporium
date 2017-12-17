@@ -10,16 +10,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from grabFilePaths import grabFilepaths
-from basicFunctions import bufferSig
-from onsetDetectionFunctions import spectralFlux,noveltyLPF,localEnergy,createThreshold,threshPeaks
+from basicFunctions import bufferSig, getSpectrogram
+from onsetDetectionFunctions import spectralFlux,noveltyLPF,spectralFlatness,localEnergy,createThreshold,threshPeaks
 from scipy.signal import medfilt
+from MFCCs import filter_noisy_frames
 
 path = '../32kHzBirdSongs/'
 filepaths = grabFilepaths(path)
 win_size = 512
 hop_size = 256
 overlap = win_size - hop_size
-fs, song = wavfile.read(filepaths[3][4])
+file = filepaths[2][3]
+print(file)
+fs, song = wavfile.read(file)
 if len(song) > fs*60:
     song = song[0:fs*60]
 song = song/np.max(np.abs(song))
@@ -61,6 +64,18 @@ plt.plot(timeVec,thresh2,':b')
 plt.plot(timeVec[times[:]],peaks, 'ko')
 plt.xlabel('Time in Seconds')
 plt.ylabel('Nov Broiii')
+
+plt.figure()
+S,F,T = getSpectrogram(song,win_size,hop_size,fs)
+sFlat = spectralFlatness(S)
+sFlat = noveltyLPF(sFlat,le_fs,w_c)
+plt.subplot(211)
+plt.plot(sFlat)
+
+filtFrames, num_chopped = filter_noisy_frames(frames)
+#filtFrames = noveltyLPF(filtFrames,le_fs,w_c)
+plt.subplot(212)
+plt.plot(spectralFlatness(filtFrames))
 
 #plt.subplot(212)
 #plt.plot()
