@@ -13,19 +13,15 @@ from basicFunctions import bufferSig
 from onsetDetectionFunctions import noveltyLPF,spectralFlux,createThreshold,threshPeaks
 from MFCCs import compute_mfccs_frames
 
+# run after classify.py
 # change filepath and species # for each test
-filepath = '../DemoBirds/chickadee.wav'
-species = 2
+filepath = '../DemoBirds/goldfinch.wav'
+species = 3
 pretty_print = ['an oriole!', 'a cardinal!', 'a chickadee!', 'a goldfinch!', 'a robin!']
 
 # load training data and prepare random forest
 X_train = np.load('../SavedVariables/X_train.npy')
 y_train = np.load('../SavedVariables/y_train.npy')
-
-# comment this out if forest is ready to go
-#print("Preparing random forest.")
-#forest = RandomForestClassifier(n_estimators=100, random_state=0, max_features=4)
-#forest.fit(X_train, y_train)
 
 # load and prepare test data
 win_size = 512
