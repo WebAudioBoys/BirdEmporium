@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 mfccs = np.load('../SavedVariables/all_mfccs.npy')
-labels = np.load('../SavedVariables/BirdLabels32.npy') 
+#labels = np.load('../SavedVariables/BirdLabels32.npy') 
 birds = ["Oriole", "Cardinal", "Chickadee", "Goldfinch", "Robin"]
 
 print("Splitting testing and training data.")

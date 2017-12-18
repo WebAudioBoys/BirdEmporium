@@ -13,7 +13,7 @@ import numpy as np
 from scipy.io import wavfile
 from grabFilePaths import grabFilepaths
 from basicFunctions import bufferSig
-from onsetDetectionFunctions import noveltyLPF,spectralFlux,localEnergy,findPeaks,createThreshold,threshPeaks
+from onsetDetectionFunctions import noveltyLPF,spectralFlux,createThreshold,threshPeaks
 
 win_size = 512
 hop_size = 256
@@ -55,7 +55,7 @@ for directory in range(0,5):
         peaks,times = threshPeaks(filtered_sf,thresh2)
 
         # choose frames from onset points
-        max_num_frames = np.floor(fs/hop_size)
+        max_num_frames = np.floor(fs/(2*hop_size))
         endTimes = np.append(np.diff(times),0)
         endTimes = np.clip(endTimes,1,max_num_frames)
         endTimes = times+endTimes
