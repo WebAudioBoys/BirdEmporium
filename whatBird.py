@@ -15,7 +15,7 @@ from MFCCs import compute_mfccs_frames
 
 # change filepath and species # for each test
 filepath = '../DemoBirds/chickadee.wav'
-species = 3
+species = 2
 pretty_print = ['an oriole!', 'a cardinal!', 'a chickadee!', 'a goldfinch!', 'a robin!']
 
 # load training data and prepare random forest
@@ -97,8 +97,16 @@ X_test, mfcc_fs = compute_mfccs_frames(testFrames,fs,
 hop_size,min_freq,max_freq,num_mel_filts, n_dct)
 
 # predict class of test
-p_labels = forest.predict(X_test.transpose())
+p_labels = np.array(forest.predict(X_test.transpose()))
 p_species = int(stats.mode(p_labels)[0][0])
 
+print("-----------------------------------")
 print("I think this bird is %s" % pretty_print[p_species])
-print("Am I right?")
+print("-----------------------------------")
+print("Predicted Labels:")
+print("Oriole: %f" % (len(p_labels[p_labels==0])/len(p_labels)))
+print("Cardinal: %f" % (len(p_labels[p_labels==1])/len(p_labels)))
+print("Chickadee: %f" % (len(p_labels[p_labels==2])/len(p_labels)))
+print("Goldfinch: %f" % (len(p_labels[p_labels==3])/len(p_labels)))
+print("Robin: %f" % (len(p_labels[p_labels==4])/len(p_labels)))
+print("-----------------------------------")
