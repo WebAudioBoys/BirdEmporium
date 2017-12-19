@@ -10,40 +10,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from grabFilePaths import grabFilepaths
-from basicFunctions import bufferSig,getSpectrogram
-from onsetDetectionFunctions import spectralFlux,spectralFlatness,noveltyLPF,localEnergy,createThreshold,threshPeaks
-from scipy.signal import medfilt
+from basicFunctions import bufferSig
+from onsetDetectionFunctions import spectralFlux,noveltyLPF,createThreshold,threshPeaks
+
 
 path = '../32kHzBirdSongs/'
 filepaths = grabFilepaths(path)
 win_size = 512
 hop_size = 256
+w_c = 1.8
 overlap = win_size - hop_size
-fs, song = wavfile.read(filepaths[3][90])
+fs, song = wavfile.read(filepaths[0][10])
+
 if len(song) > fs*60:
     song = song[0:fs*60]
+songLen = len(song)
+songTime = np.linspace(0,len(song)-1,songLen)
+songTime = songTime/fs
 song = song/np.max(np.abs(song))
-songLen = len(song)/fs
+
 frames = bufferSig(song,win_size,overlap)
 timeBins = frames.shape[1]
 timeVec = np.linspace(0,1-(1/timeBins), timeBins)
-timeVec = timeVec * songLen
-le, le_fs = localEnergy(song,win_size,hop_size,fs)
-w_c = 1.8
-filtered_le = noveltyLPF(le,le_fs,w_c)
-filtered_le = (filtered_le - np.min(filtered_le))
-filtered_le = filtered_le/np.max(filtered_le)
-thresh1 = createThreshold(filtered_le,15)
-thresh1 = thresh1 + 0.003
-peaks,times = threshPeaks(filtered_le,thresh1)
+timeVec = timeVec * (songLen/fs)
 
 plt.figure()
 plt.subplot(211)
-plt.plot(timeVec,filtered_le,'r')
-plt.plot(timeVec,thresh1,':b')
-plt.plot(timeVec[times[:]],peaks, 'ko')
+plt.plot(songTime,song,'r')
 plt.xlabel('Time in Seconds')
-plt.ylabel('Nov Broiii')
+plt.ylabel('Amplitude')
+plt.title('Baltimore Oriole')
 
 sf,sf_fs = spectralFlux(song,win_size,hop_size,fs)
 sf = np.append(0,sf)
@@ -60,14 +56,5 @@ plt.plot(timeVec,filtered_sf,'r')
 plt.plot(timeVec,thresh2,':b')
 plt.plot(timeVec[times[:]],peaks, 'ko')
 plt.xlabel('Time in Seconds')
-plt.ylabel('Nov Broiii')
+plt.ylabel('Spectral Flux')
 
-S,F,T = getSpectrogram(song,win_size,hop_size,fs)
-flatness = spectralFlatness(S)
-plt.figure()
-plt.plot(flatness)
-
-
-
-#plt.subplot(212)
-#plt.plot()
