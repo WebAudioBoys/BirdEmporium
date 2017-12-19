@@ -35,9 +35,10 @@ for directory in range(0,5):
     for filepath in filepaths[directory]:
         # read and buffer, truncate to 60s for long signals
         fs, song = wavfile.read(filepath)
-        if len(song) > fs*60:
-            song = song[0:fs*60]
         song = song/np.max(np.abs(song))
+        if len(song) > fs*60*5:
+            song = song[0:fs*60*5]
+        
         frames = bufferSig(song,win_size,overlap)
 
         # calculate onsets by spectral flux
@@ -84,21 +85,48 @@ for directory in range(0,5):
                 robinFrames = np.hstack((robinFrames,framesWeNeed))
         print(filepath, 'is finished buddy!')
 
-        # create labels
-        theseLabels = np.ones(framesWeNeed.shape[1])
-        labels = np.append(labels, theseLabels*directory)
 
-# save outputs as .npz for feature extraction
-orioleFrames = orioleFrames[:,1:]      
-cardinalFrames = cardinalFrames[:,1:]      
-chickadeeFrames = chickadeeFrames[:,1:]      
-finchFrames = finchFrames[:,1:]      
-robinFrames = robinFrames[:,1:]      
 
+
+lengths = np.zeros(5)
+orioleFrames = orioleFrames[:,1:]
+lengths[0] = orioleFrames.shape[1]     
+cardinalFrames = cardinalFrames[:,1:]
+lengths[1] = cardinalFrames.shape[1]     
+chickadeeFrames = chickadeeFrames[:,1:]
+lengths[2] = chickadeeFrames.shape[1]      
+finchFrames = finchFrames[:,1:] 
+lengths[3] = finchFrames.shape[1]     
+robinFrames = robinFrames[:,1:]
+lengths[4] = robinFrames.shape[1]
+
+#Shortest Length of Extracted Frames
+per_class_len = np.int(np.min(lengths))
+
+#Randomize selection of frames to balance dataset for feature extraction
+orioleIndices = np.random.permutation(np.arange(lengths[0],dtype=np.int))[:per_class_len]
+cardinalIndices = np.random.permutation(np.arange(lengths[1],dtype=np.int))[:per_class_len]
+chickadeeIndices = np.random.permutation(np.arange(lengths[2],dtype=np.int))[:per_class_len]
+finchIndices = np.random.permutation(np.arange(lengths[3],dtype=np.int))[:per_class_len]
+robinIndices = np.random.permutation(np.arange(lengths[4],dtype=np.int))[:per_class_len]
+
+orioleFrames = orioleFrames[:,orioleIndices[:]]
+cardinalFrames = cardinalFrames[:,cardinalIndices[:]]
+chickadeeFrames = chickadeeFrames[:,chickadeeIndices[:]]
+finchFrames = finchFrames[:,finchIndices[:]]
+robinFrames = robinFrames[:,robinIndices[:]] 
+
+for i in range(5):
+    class_nums = np.zeros(per_class_len)+ i
+    labels = np.append(labels,class_nums)
+    
+
+
+  
+# save outputs as .npy for feature extraction
 np.save('../SavedVariables/orioleTruncatedFrames32', orioleFrames)
 np.save('../SavedVariables/cardinalTruncatedFrames32', cardinalFrames)
 np.save('../SavedVariables/chickadeeTruncatedFrames32', chickadeeFrames)
 np.save('../SavedVariables/finchTruncatedFrames32', finchFrames)
 np.save('../SavedVariables/robinTruncatedFrames32', robinFrames)
-
-np.save('../SavedVariables/BirdLabels32', labels)        
+np.save('../SavedVariables/BirdLabels32', labels)   
