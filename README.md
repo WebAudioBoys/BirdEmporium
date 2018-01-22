@@ -1,5 +1,6 @@
 # BirdEmporium
-MIR Final Project by Brad and Dave.
+Final project for MIR, NYU MPATE-GE 2623 Fall 2017.
+Employs onset detection and MFCC analysis to identify the calls of cardinals, chickadees, goldfinches, orioles, and robins in field recordings.
 
 ## Running the classifier:
 1. grabFramesBySpecies.py - Selects relevant audio by onset detection, creates buffered audio matrix of selected frames for each species.
